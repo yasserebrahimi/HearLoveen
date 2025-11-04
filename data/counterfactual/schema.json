@@ -1,0 +1,23 @@
+{
+  "title": "CounterfactualLog",
+  "type": "object",
+  "properties": {
+    "childId": {
+      "type": "string"
+    },
+    "context": {
+      "type": "object"
+    },
+    "action": {
+      "type": "string"
+    },
+    "reward": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "childId",
+    "action",
+    "reward"
+  ]
+}

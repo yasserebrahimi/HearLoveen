@@ -1,0 +1,19 @@
+service: hearloveen
+owner: platform@sre
+objectives:
+  - name: api-availability
+    target: 99.9
+    window: 30d
+    indicator: http-availability
+  - name: api-latency-p95
+    target: 95% under 300ms
+    window: 30d
+    indicator: http-latency-p95
+  - name: ai-processing-p90
+    target: 90% under 30s
+    window: 30d
+    indicator: worker-processing-latency
+  - name: error-rate
+    target: < 1%
+    window: 30d
+    indicator: http-5xx-rate

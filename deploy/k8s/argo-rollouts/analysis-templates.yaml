@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata: { name: guardrail-error-rate }
+spec:
+  metrics:
+  - name: http-5xx-rate
+    interval: 1m
+    successCondition: result < 0.01
+    provider:
+      prometheus:
+        address: http://prometheus-server.monitoring.svc:80
+        query: |
+          sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / sum(rate(http_server_requests_seconds_count[5m]))
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata: { name: guardrail-latency }
+spec:
+  metrics:
+  - name: worker-latency-p90
+    interval: 1m
+    successCondition: result < 30
+    provider:
+      prometheus:
+        address: http://prometheus-server.monitoring.svc:80
+        query: |
+          histogram_quantile(0.90, sum(rate(worker_processing_seconds_bucket[5m])) by (le))

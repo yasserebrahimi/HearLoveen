@@ -1,0 +1,39 @@
+# --- .NET
+bin/
+obj/
+*.user
+*.suo
+*.vs/
+
+# Rider/IDEA
+.idea/
+
+# VSCode
+.vscode/
+!.vscode/extensions.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node/Frontend
+node_modules/
+dist/
+build/
+
+# Env / Secrets (نمونه)
+.env
+*.secret*
+secrets/*
+*.key
+*.p12
+
+# Data/Artifacts
+data/**/raw/
+data/**/tmp/
+*.log
+
+# Docker/Compose
+*.env.local

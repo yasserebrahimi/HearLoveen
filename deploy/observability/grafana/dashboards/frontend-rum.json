@@ -1,0 +1,43 @@
+{
+  "title": "Frontend RUM & Web Vitals",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "LCP (p75)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.75, sum(rate(frontend_lcp_bucket[5m])) by (le))"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "CLS (p75)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.75, sum(rate(frontend_cls_bucket[5m])) by (le))"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "FID (p75)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.75, sum(rate(frontend_fid_bucket[5m])) by (le))"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Frontend Errors (1h)",
+      "targets": [
+        {
+          "expr": "increase(frontend_errors_total[1h])"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 36,
+  "version": 1
+}

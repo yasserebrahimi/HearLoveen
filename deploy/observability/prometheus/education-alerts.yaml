@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata: { name: hearloveen-education-alerts }
+spec:
+  groups:
+  - name: education
+    rules:
+    - alert: StreakDrop
+      annotations:
+        summary: "Child success streak dropping"
+        description: "Average success streak decreased by >30% vs 7d baseline"
+      expr: |
+        (avg(curriculum_success_streak) - avg_over_time(curriculum_success_streak[7d])) / clamp_min(avg_over_time(curriculum_success_streak[7d]),1) < -0.3
+      for: 30m
+      labels: { severity: warning }
+    - alert: PatternDriftHigh
+      annotations:
+        summary: "Phoneme pattern drift high"
+        description: "Worker KL divergence vs baseline exceeds threshold"
+      expr: worker_phoneme_kl > 0.5
+      for: 15m
+      labels: { severity: warning }

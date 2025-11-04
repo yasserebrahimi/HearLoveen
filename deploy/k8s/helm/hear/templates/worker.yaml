@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+spec:
+  replicas: {{ .Values.workerReplicaCount }}
+  selector: { matchLabels: { app: worker } }
+  template:
+    metadata: { labels: { app: worker } }
+    spec:
+      containers:
+      - name: worker
+        image: "{{ .Values.workerImage.repository }}:{{ .Values.workerImage.tag }}"
+        env:
+        - name: SB_CONNECTION
+          value: "{{ .Values.env.SERVICEBUS_CONN }}"

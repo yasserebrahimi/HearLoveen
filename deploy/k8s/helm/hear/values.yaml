@@ -1,0 +1,20 @@
+image:
+  repository: ghcr.io/your-org/hearloveen-api
+  tag: latest
+
+workerImage:
+  repository: ghcr.io/your-org/hearloveen-worker
+  tag: latest
+
+env:
+  POSTGRES_CONN: "Host=postgres;Database=hear;Username=hear;Password=hear"
+  SERVICEBUS_CONN: "Endpoint=sb://CHANGE/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=***"
+  REDIS_CONN: "redis:6379"
+  BLOB_ACCOUNT_URL: "https://CHANGE.blob.core.windows.net"
+  BLOB_CONTAINER: "audio"
+
+replicaCount: 2
+workerReplicaCount: 1
+
+canary:
+  weight: 10

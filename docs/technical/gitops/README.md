@@ -1,0 +1,3 @@
+- Set repoURL to your git
+- Create overlays under deploy/k8s/overlays/{dev,stage,prod}
+- Enable automated sync

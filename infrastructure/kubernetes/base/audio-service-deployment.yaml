@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audio-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: audio-service
+  template:
+    metadata:
+      labels:
+        app: audio-service
+    spec:
+      containers:
+      - name: audio-service
+        image: hearloveen.azurecr.io/audio-service:latest
+        ports:
+        - containerPort: 5001
+        env:
+        - name: ConnectionStrings__DefaultConnection
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: connection-string
+        - name: Azure__BlobStorage__ConnectionString
+          valueFrom:
+            secretKeyRef:
+              name: azure-secrets
+              key: blob-connection-string
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: audio-service
+spec:
+  selector:
+    app: audio-service
+  ports:
+  - port: 5001
+    targetPort: 5001
+  type: ClusterIP

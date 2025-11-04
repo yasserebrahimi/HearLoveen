@@ -1,0 +1,11 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata: { name: hearloveen-api }
+spec:
+  destination: { namespace: hearloveen, server: https://kubernetes.default.svc }
+  source:
+    repoURL: https://github.com/yourorg/HearLoveen-Enterprise.git
+    targetRevision: main
+    path: deploy/k8s/overlays/prod/api
+  project: default
+  syncPolicy: { automated: { prune: true, selfHeal: true } }

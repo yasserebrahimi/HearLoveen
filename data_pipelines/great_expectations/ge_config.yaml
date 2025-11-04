@@ -1,0 +1,6 @@
+
+expectations:
+  - name: k_anonymity_check
+    params: { quasi_identifiers: ["age","city","clinic_id"], k: 10 }
+  - name: pii_fields_encrypted
+    params: { fields: ["parent_email","phone"], encryption: "AES-GCM" }

@@ -1,0 +1,36 @@
+route:
+  receiver: default
+  routes:
+    - matchers:
+        - severity = critical
+      receiver: pagerduty
+    - matchers:
+        - severity = warning
+      receiver: slack
+
+receivers:
+  - name: default
+  - name: slack
+    slack_configs:
+      - api_url: CHANGE_ME_SLACK_WEBHOOK
+        channel: '#hearloveen-alerts'
+        send_resolved: true
+        title: '{{ template "slack.hearloveen.title" . }}'
+        text: '{{ template "slack.hearloveen.text" . }}'
+
+  - name: pagerduty
+    pagerduty_configs:
+      - routing_key: YOUR_PAGERDUTY_ROUTING_KEY
+        severity: '{{ if eq .Labels.severity "critical" }}critical{{ else }}warning{{ end }}'
+        send_resolved: true
+templates:
+  - |
+    {{ define "slack.hearloveen.title" }}[{{ .Status | toUpper }}] {{ .Labels.alertname }} ({{ .Labels.service }}){{ end }}
+  - |
+    {{ define "slack.hearloveen.text" }}
+      *Summary:* {{ .Annotations.summary }}
+      *Description:* {{ .Annotations.description }}
+      *Severity:* {{ .Labels.severity }}
+      *StartsAt:* {{ .StartsAt }}
+    {{ end }}
+

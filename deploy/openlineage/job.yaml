@@ -1,0 +1,10 @@
+
+facets:
+  documentation:
+    description: "Alignment Worker job lineage"
+inputs:
+  - namespace: "hearloveen"
+    name: "audio-submissions"
+outputs:
+  - namespace: "hearloveen"
+    name: "feedback-reports"

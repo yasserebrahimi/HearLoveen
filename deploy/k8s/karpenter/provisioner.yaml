@@ -1,0 +1,15 @@
+
+apiVersion: karpenter.sh/v1beta1
+kind: Provisioner
+metadata: { name: hearloveen }
+spec:
+  consolidation:
+    enabled: true
+  requirements:
+  - key: kubernetes.io/arch
+    operator: In
+    values: ["amd64"]
+  limits:
+    resources:
+      cpu: "1000"
+      memory: 1000Gi

@@ -1,0 +1,9 @@
+# syntax=docker/dockerfile:1.6
+FROM python:3.11-slim
+WORKDIR /app
+COPY src/ai-workers/python/requirements.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+COPY src/ai-workers/python/ .
+EXPOSE 8000
+ENV SB_QUEUE=audio-submitted
+CMD ["python","main.py"]

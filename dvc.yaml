@@ -1,0 +1,5 @@
+
+stages:
+  extract:
+    cmd: python src/ai-workers/python/main.py --extract-only
+    outs: [ data/features ]

@@ -1,0 +1,34 @@
+{
+  "title": "Curriculum Progress",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Avg Phoneme Rating",
+      "targets": [
+        {
+          "expr": "avg_over_time(phoneme_rating_value[7d])"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Success Streak (avg)",
+      "targets": [
+        {
+          "expr": "avg_over_time(curriculum_success_streak[7d])"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Worker KL Divergence",
+      "targets": [
+        {
+          "expr": "worker_phoneme_kl"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 36,
+  "version": 1
+}

@@ -1,0 +1,17 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: worker-sb-scale
+spec:
+  scaleTargetRef: { name: worker-rollout }
+  pollingInterval: 30
+  cooldownPeriod: 300
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+  - type: azure-servicebus
+    metadata:
+      namespace: YOUR_SB_NAMESPACE
+      queueName: alignment-jobs
+      messageCount: "50"
+      connectionFromEnv: SERVICEBUS_CONNECTION

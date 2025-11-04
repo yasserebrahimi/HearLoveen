@@ -1,0 +1,25 @@
+{
+  "title": "Cost per Outcome",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Cost per 1% Mastery Gain",
+      "targets": [
+        {
+          "expr": "sum(rate(cost_total[1h])) / clamp_min(rate(mastered_percent_gain[1h]), 0.01)"
+        }
+      ]
+    },
+    {
+      "type": "gauge",
+      "title": "SLO: Outcome Attainment",
+      "targets": [
+        {
+          "expr": "avg(outcome_attainment_ratio)"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 36,
+  "version": 1
+}

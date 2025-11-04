@@ -1,0 +1,14 @@
+fastapi==0.115.2
+uvicorn==0.30.6
+pydantic==2.9.2
+numpy==2.1.2
+soundfile==0.12.1
+librosa==0.10.2.post1
+onnxruntime==1.18.1
+azure-servicebus==7.17.3
+azure-storage-blob==12.22.2
+
+psycopg2-binary==2.9.9
+prometheus-client==0.20.0
+
+g2p_en==2.1.0

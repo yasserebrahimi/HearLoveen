@@ -1,0 +1,106 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  AZURE_RESOURCE_GROUP: hearloveen-prod-rg
+  AKS_CLUSTER_NAME: hearloveen-aks
+  ACR_NAME: hearloveen.azurecr.io
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Restore dependencies
+        run: dotnet restore
+      
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+      
+      - name: Test
+        run: dotnet test --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage"
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        working-directory: ./web-dashboard
+        run: npm ci
+      
+      - name: Run tests
+        working-directory: ./web-dashboard
+        run: npm test
+      
+      - name: Build
+        working-directory: ./web-dashboard
+        run: npm run build
+
+  build-and-push:
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Azure Container Registry Login
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.ACR_NAME }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+      
+      - name: Build and push API Gateway
+        run: |
+          docker build -t ${{ env.ACR_NAME }}/api-gateway:${{ github.sha }} -f src/ApiGateway/Dockerfile .
+          docker push ${{ env.ACR_NAME }}/api-gateway:${{ github.sha }}
+      
+      - name: Build and push Audio Service
+        run: |
+          docker build -t ${{ env.ACR_NAME }}/audio-service:${{ github.sha }} -f src/AudioService/Dockerfile .
+          docker push ${{ env.ACR_NAME }}/audio-service:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AKS_CLUSTER_NAME }}
+      
+      - name: Deploy to AKS
+        run: |
+          kubectl set image deployment/api-gateway api-gateway=${{ env.ACR_NAME }}/api-gateway:${{ github.sha }}
+          kubectl set image deployment/audio-service audio-service=${{ env.ACR_NAME }}/audio-service:${{ github.sha }}
+          kubectl rollout status deployment/api-gateway
+          kubectl rollout status deployment/audio-service

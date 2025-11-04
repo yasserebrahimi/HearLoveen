@@ -1,0 +1,9 @@
+flags:
+  use_lexicon_weighting:
+    state: ENABLED
+    variants: { A: true, B: false }
+    defaultVariant: A
+  curriculum_scheduler:
+    state: ENABLED
+    variants: { elo: "elo", fixed: "fixed" }
+    defaultVariant: elo

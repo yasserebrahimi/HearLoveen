@@ -1,0 +1,13 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: worker-scaledobject
+spec:
+  scaleTargetRef:
+    name: worker
+  triggers:
+  - type: azure-servicebus
+    metadata:
+      connectionFromEnv: SB_CONNECTION
+      queueName: audio-submitted
+      messageCount: "5"

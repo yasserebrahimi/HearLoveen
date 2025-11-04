@@ -1,0 +1,14 @@
+
+name: supplychain
+on: { push: { branches: [ main ] } }
+jobs:
+  build-sign:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build images
+      run: echo "docker build ..."  # replace with real build
+    - name: Generate SBOM
+      run: echo "syft packages dir:."  # replace with Anchore Syft
+    - name: Sign with Cosign
+      run: echo "cosign sign --key env://COSIGN_KEY your.image:tag"

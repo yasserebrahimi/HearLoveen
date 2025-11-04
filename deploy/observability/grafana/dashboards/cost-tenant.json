@@ -1,0 +1,25 @@
+{
+  "title": "Cost by Tenant",
+  "panels": [
+    {
+      "type": "table",
+      "title": "Daily Cost by Namespace (OpenCost)",
+      "targets": [
+        {
+          "expr": "sum by (namespace) (rate(opencost_cost_allocation_amount[1d]))"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Cost Over Time (Top 5 namespaces)",
+      "targets": [
+        {
+          "expr": "topk(5, sum by (namespace) (rate(opencost_cost_allocation_amount[1h])))"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 36,
+  "version": 1
+}
