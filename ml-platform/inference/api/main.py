@@ -5,18 +5,22 @@ import torch
 import numpy as np
 from pydantic import BaseModel
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="HearLoveen ML API", version="1.0.0")
 
+# Configure CORS with environment-specific origins
+# In production, set CORS_ORIGINS environment variable to comma-separated list of allowed origins
+allowed_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # Load Whisper model (fine-tuned version)

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HearLoveen.Infrastructure.Security;
 public static class CryptoService
 {
-    public static string Encrypt(string plaintext, byte[] key)
+    public static string? Encrypt(string? plaintext, byte[] key)
     {
         if (plaintext == null) return null;
         using var aes = new AesGcm(key);
@@ -15,7 +15,7 @@ public static class CryptoService
         aes.Encrypt(nonce, plain, ct, tag);
         return Convert.ToBase64String(nonce.Concat(tag).Concat(ct).ToArray());
     }
-    public static string Decrypt(string cipherB64, byte[] key)
+    public static string? Decrypt(string? cipherB64, byte[] key)
     {
         if (cipherB64 == null) return null;
         var data = Convert.FromBase64String(cipherB64);
@@ -28,5 +28,5 @@ public static class CryptoService
         return Encoding.UTF8.GetString(plain);
     }
     public static ValueConverter<string,string> MakeConverter(byte[] key) =>
-        new ValueConverter<string,string>(v => Encrypt(v, key), v => Decrypt(v, key));
+        new ValueConverter<string,string>(v => Encrypt(v, key) ?? string.Empty, v => Decrypt(v, key) ?? string.Empty);
 }

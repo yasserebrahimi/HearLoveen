@@ -49,10 +49,21 @@ def softmax(x):
 
 def greedy_ctc_decode(logits):
     """
+    Greedy CTC (Connectionist Temporal Classification) decoding.
+
+    Decodes the most likely phoneme sequence from acoustic model logits by:
+    1. Computing softmax probabilities from logits
+    2. Taking argmax at each timestep
+    3. Collapsing consecutive duplicate phonemes (CTC blank removal)
+
     Args:
-      logits: np.ndarray [T, V] unnormalized
+      logits: np.ndarray [T, V] - unnormalized log probabilities
+              where T = number of time frames, V = vocabulary size
+
     Returns:
-      decoded (str), frame_ids (np.ndarray[T]), probs (np.ndarray[T,V])
+      decoded (str): Space-separated phoneme sequence
+      frame_ids (np.ndarray[T]): Phoneme ID at each frame
+      probs (np.ndarray[T,V]): Softmax probabilities over vocabulary at each frame
     """
     probs = softmax(logits)
     ids = np.argmax(probs, axis=-1)  # [T]
@@ -70,8 +81,26 @@ def greedy_ctc_decode(logits):
 
 def viterbi_ctc_align(logits, target_seq_ids):
     """
-    Viterbi alignment for CTC: target_seq_ids excludes blanks. We'll align frames T to sequence N.
-    Returns frame->target index (-1 for blank).
+    Viterbi alignment for forced CTC alignment.
+
+    Given acoustic model outputs and a known target phoneme sequence,
+    computes the most likely alignment between audio frames and phonemes
+    using dynamic programming (Viterbi algorithm).
+
+    This is used for teacher-forced alignment where we know the expected
+    phoneme sequence and want to find which frames correspond to each phoneme.
+
+    Algorithm:
+    - dp[t,n] = max log probability of reaching phoneme n at time t
+    - At each frame, can either stay on current phoneme (emit blank) or advance
+    - Backtrack from best final state to recover alignment
+
+    Args:
+      logits: np.ndarray [T, V] - acoustic model logits (unnormalized)
+      target_seq_ids: list[int] - expected phoneme IDs (excludes blanks)
+
+    Returns:
+      np.ndarray[T] - frame->target mapping, -1 indicates blank/no phoneme
     """
     import numpy as np
     T, V = logits.shape
@@ -109,8 +138,22 @@ def viterbi_ctc_align(logits, target_seq_ids):
 
 def forced_alignment(frame_ids, probs, hop=0.02):
     """
-    Boundary-based forced alignment over CTC frames.
-    Returns list of dicts: {p, start, end, conf}
+    Convert frame-level phoneme predictions to time-aligned segments.
+
+    Groups consecutive frames with the same phoneme ID into segments,
+    computing start/end times and average confidence for each phoneme.
+
+    Args:
+      frame_ids: np.ndarray[T] - phoneme ID at each frame (0 = blank)
+      probs: np.ndarray[T,V] - probability distribution at each frame
+      hop: float - hop size in seconds (default 0.02s = 20ms)
+
+    Returns:
+      list[dict] - segments with keys:
+        - p (str): phoneme symbol
+        - start (float): start time in seconds
+        - end (float): end time in seconds
+        - conf (float): average confidence score [0-1]
     """
     T = len(frame_ids)
     segs = []
@@ -130,12 +173,29 @@ def forced_alignment(frame_ids, probs, hop=0.02):
     return segs
 
 def composite_score(phoneme_segments, emotion_label):
+    """
+    Calculate overall pronunciation quality score from 0-100.
+
+    Scoring methodology:
+    1. Base score from average phoneme confidence: 60 + (40 * avg_confidence)
+       - This maps confidence [0-1] to score range [60-100]
+    2. Emotion penalty: -10 points for negative emotions (frustrated, angry, sad)
+       - Negative emotions may indicate struggle or reduced engagement
+    3. Final score clamped to [0, 100] range
+
+    Args:
+      phoneme_segments: list[dict] - segments with 'conf' (confidence) field
+      emotion_label: str - detected emotion (neutral, happy, sad, angry, frustrated)
+
+    Returns:
+      int - overall score from 0 to 100
+    """
     if not phoneme_segments:
         return 0
     avg_conf = float(np.mean([s["conf"] for s in phoneme_segments]))
-    base = int(60 + 40 * avg_conf)  # 60..100
+    base = int(60 + 40 * avg_conf)  # Map [0-1] confidence to [60-100] score
     if emotion_label in ("frustrated","angry","sad"):
-        base -= 10
+        base -= 10  # Penalty for negative emotions
     return max(0, min(100, base))
 
 EMO_LABELS = ["neutral","happy","sad","angry","frustrated"]
@@ -165,14 +225,18 @@ def run_asr_phoneme(wav, sr):
 
 def persist_report(pg_conn, submission_id, score, weakness, recommendation, radar):
     import psycopg2
-    with psycopg2.connect(pg_conn) as conn:
-        with conn.cursor() as cur:
-            cur.execute("""
-                insert into "FeedbackReports"("Id","SubmissionId","Score0_100","Weakness","Recommendation","CreatedAtUtc")
-                values(gen_random_uuid(), %s, %s, %s, %s, now())
-                """,
-                (submission_id, score, weakness, recommendation))
-            conn.commit()
+    try:
+        with psycopg2.connect(pg_conn) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    insert into "FeedbackReports"("Id","SubmissionId","Score0_100","Weakness","Recommendation","CreatedAtUtc")
+                    values(gen_random_uuid(), %s, %s, %s, %s, now())
+                    """,
+                    (submission_id, score, weakness, recommendation))
+                conn.commit()
+    except Exception as ex:
+        print(f"[ERROR] Failed to persist report for submission {submission_id}: {ex}")
+        raise
 
 @app.get("/health")
 async def health(): 
@@ -187,15 +251,32 @@ async def process_message(payload):
     start = time.time()
     REQS.inc()
     try:
+        # Input validation
         submission_id = payload.get("submissionId")
         child_id = payload.get("childId")
         blob_url = payload.get("blobUrl")
+
+        if not submission_id:
+            raise ValueError("Missing submissionId")
+        if not child_id:
+            raise ValueError("Missing childId")
         if not blob_url:
             raise ValueError("Missing blobUrl")
-        async with BlobClient.from_blob_url(blob_url) as bc:
-            data = await bc.download_blob()
-            wav_bytes = await data.readall()
-        wav, sr = sf.read(io.BytesIO(wav_bytes), dtype="float32", always_2d=False)
+        # Download audio with error handling
+        try:
+            async with BlobClient.from_blob_url(blob_url) as bc:
+                data = await bc.download_blob()
+                wav_bytes = await data.readall()
+        except Exception as ex:
+            print(f"[ERROR] Failed to download blob {blob_url}: {ex}")
+            raise ValueError(f"Blob download failed: {ex}")
+
+        # Validate and load audio format
+        try:
+            wav, sr = sf.read(io.BytesIO(wav_bytes), dtype="float32", always_2d=False)
+        except Exception as ex:
+            print(f"[ERROR] Invalid audio format for submission {submission_id}: {ex}")
+            raise ValueError(f"Invalid audio format: {ex}")
         if hasattr(wav, "ndim") and wav.ndim > 1:
             wav = wav.mean(axis=1)
         logits = run_asr_phoneme(wav, sr)
@@ -278,8 +359,8 @@ async def process_message(payload):
                     h = hist[i] if i < len(hist) else 0
                     ema.append((1-alpha)*b + alpha*h)
                 load_save_baseline(PG_CONN, ema)
-        except Exception as _ex:
-            pass
+        except Exception as drift_ex:
+            print(f"[WARN] Drift detection failed: {drift_ex}")
 
         weakness = "articulation" if score < 75 else "prosody"
         recommendation = "Slow down and repeat target words; emphasize endings." if weakness=="articulation" else "Vary pitch and stress; try call-and-response games."
@@ -492,37 +573,69 @@ def update_curriculum(pg_conn, child_id, segments, score):
     # pick weakest top-3 phonemes by avg confidence
     if not child_id or not segments:
         return
+
+    # Validate phonemes against known set
+    valid_phonemes = set(PHONEME_SET) - {"<blank>"}
+
     import psycopg2
     from collections import defaultdict
     agg = defaultdict(list)
     for s in segments:
         try:
-            agg[s["p"]].append(float(s.get("conf", 0.0)))
-        except Exception:
-            pass
+            phoneme = s["p"]
+            if phoneme not in valid_phonemes:
+                print(f"[WARN] Invalid phoneme '{phoneme}' found in segments, skipping")
+                continue
+            agg[phoneme].append(float(s.get("conf", 0.0)))
+        except Exception as ex:
+            print(f"[WARN] Error processing segment {s}: {ex}")
+            continue
+
     items = sorted(((p, sum(v)/len(v)) for p, v in agg.items() if v), key=lambda x: x[1])
     weak = [p for p, _ in items[:3]] or ["R", "S"]
-    with psycopg2.connect(pg_conn) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                insert into "ChildCurricula"("Id","ChildId","FocusPhonemesCsv","Difficulty","SuccessStreak","UpdatedAtUtc")
-                values(gen_random_uuid(), %s, %s, %s, 0, now())
-                on conflict ("ChildId") do update set
-                    "FocusPhonemesCsv"=excluded."FocusPhonemesCsv",
-                    "UpdatedAtUtc"=now()
-                """,
-                (str(child_id), ",".join(weak), 1 if score < 70 else 2)
-            )
-        conn.commit()
+
+    try:
+        with psycopg2.connect(pg_conn) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    insert into "ChildCurricula"("Id","ChildId","FocusPhonemesCsv","Difficulty","SuccessStreak","UpdatedAtUtc")
+                    values(gen_random_uuid(), %s, %s, %s, 0, now())
+                    on conflict ("ChildId") do update set
+                        "FocusPhonemesCsv"=excluded."FocusPhonemesCsv",
+                        "UpdatedAtUtc"=now()
+                    """,
+                    (str(child_id), ",".join(weak), 1 if score < 70 else 2)
+                )
+            conn.commit()
+    except Exception as ex:
+        print(f"[ERROR] Failed to update curriculum for child {child_id}: {ex}")
+        raise
 
 
 
 def kl_divergence(p, q, eps=1e-8):
+    """
+    Calculate Kullback-Leibler divergence between two distributions.
+
+    Used for drift detection: monitors if the distribution of phonemes
+    in incoming audio differs significantly from the baseline distribution.
+    High KL divergence indicates data drift, which may require model retraining.
+
+    KL(P||Q) = sum(P[i] * log(P[i] / Q[i]))
+
+    Args:
+      p: array-like - current distribution (e.g., phoneme histogram)
+      q: array-like - reference distribution (baseline)
+      eps: float - small constant to avoid log(0)
+
+    Returns:
+      float - KL divergence (always >= 0, higher = more drift)
+    """
     import numpy as np
     p = np.asarray(p, dtype=np.float64) + eps
     q = np.asarray(q, dtype=np.float64) + eps
-    p /= p.sum(); q /= q.sum()
+    p /= p.sum(); q /= q.sum()  # Normalize to valid probability distributions
     return float((p * (np.log(p) - np.log(q))).sum())
 
 def load_save_baseline(pg_conn, new_hist=None):

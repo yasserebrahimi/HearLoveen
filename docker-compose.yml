@@ -9,7 +9,7 @@ services:
     environment:
     - ASPNETCORE_ENVIRONMENT=Development
     - ASPNETCORE_URLS=http://+:5000
-    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=postgres;Password=postgres
+    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-changeme}
     - Redis__ConnectionString=redis:6379
     - Kafka__BootstrapServers=kafka:9092
     depends_on:
@@ -25,7 +25,7 @@ services:
     environment:
     - ASPNETCORE_ENVIRONMENT=Development
     - ASPNETCORE_URLS=http://+:5001
-    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=postgres;Password=postgres
+    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-changeme}
     - Redis__ConnectionString=redis:6379
     - Kafka__BootstrapServers=kafka:9092
     depends_on:
@@ -41,7 +41,7 @@ services:
     environment:
     - ASPNETCORE_ENVIRONMENT=Development
     - ASPNETCORE_URLS=http://+:5002
-    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=postgres;Password=postgres
+    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-changeme}
     - Redis__ConnectionString=redis:6379
     - Kafka__BootstrapServers=kafka:9092
     depends_on:
@@ -57,7 +57,7 @@ services:
     environment:
     - ASPNETCORE_ENVIRONMENT=Development
     - ASPNETCORE_URLS=http://+:5003
-    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=postgres;Password=postgres
+    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-changeme}
     - Redis__ConnectionString=redis:6379
     - Kafka__BootstrapServers=kafka:9092
     depends_on:
@@ -73,7 +73,7 @@ services:
     environment:
     - ASPNETCORE_ENVIRONMENT=Development
     - ASPNETCORE_URLS=http://+:5004
-    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=postgres;Password=postgres
+    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-changeme}
     - Redis__ConnectionString=redis:6379
     - Kafka__BootstrapServers=kafka:9092
     depends_on:
@@ -89,7 +89,7 @@ services:
     environment:
     - ASPNETCORE_ENVIRONMENT=Development
     - ASPNETCORE_URLS=http://+:5005
-    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=postgres;Password=postgres
+    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-changeme}
     - Redis__ConnectionString=redis:6379
     - Kafka__BootstrapServers=kafka:9092
     depends_on:
@@ -100,8 +100,8 @@ services:
     image: postgres:14-alpine
     environment:
     - POSTGRES_DB=hearloveen
-    - POSTGRES_USER=postgres
-    - POSTGRES_PASSWORD=postgres
+    - POSTGRES_USER=${POSTGRES_USER:-postgres}
+    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
     ports:
     - 5432:5432
     volumes:
@@ -139,7 +139,7 @@ services:
     ports:
     - 3000:3000
     environment:
-    - GF_SECURITY_ADMIN_PASSWORD=admin
+    - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-changeme}
     volumes:
     - grafana_data:/var/lib/grafana
 volumes:

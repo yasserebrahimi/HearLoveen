@@ -32,15 +32,46 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Consent>().HasKey(x => x.Id);
         modelBuilder.Entity<AudioSubmission>().Property(x => x.BlobUrl).HasMaxLength(512);
         modelBuilder.Entity<User>().HasIndex(x => x.Email).IsUnique();
+
+        // Configure relationships for efficient query filtering
+        modelBuilder.Entity<FeatureVector>()
+            .HasOne<AudioSubmission>()
+            .WithMany()
+            .HasForeignKey(fv => fv.SubmissionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<FeedbackReport>()
+            .HasOne<AudioSubmission>()
+            .WithMany()
+            .HasForeignKey(fr => fr.SubmissionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Global query filters: therapist scope (restrict by ChildId)
+        // Only apply filters if user is a therapist (non-admin)
         bool IsTherapist() => _currentUser?.IsTherapist == true && !_currentUser.IsAdmin;
-        var scope = _currentUser?.ChildScope?.ToList() ?? new List<Guid>();
+        var scope = _currentUser?.ChildScope?.ToHashSet() ?? new HashSet<Guid>();
 
-        modelBuilder.Entity<AudioSubmission>().HasQueryFilter(e => !IsTherapist() || scope.Contains(e.ChildId));
-        modelBuilder.Entity<FeatureVector>().HasQueryFilter(e => !IsTherapist() || scope.Contains(e.SubmissionId == Guid.Empty ? Guid.Empty : e.SubmissionId));
-        modelBuilder.Entity<FeedbackReport>().HasQueryFilter(e => !IsTherapist() || scope.Contains(
-            (from s in Set<AudioSubmission>() where s.Id == e.SubmissionId select s.ChildId).FirstOrDefault()
-        ));
+        // Direct filtering on AudioSubmission by ChildId
+        modelBuilder.Entity<AudioSubmission>().HasQueryFilter(e =>
+            !IsTherapist() || scope.Contains(e.ChildId));
 
+        // Filter FeatureVector via navigation to AudioSubmission
+        // This uses SQL JOIN instead of N+1 queries
+        modelBuilder.Entity<FeatureVector>().HasQueryFilter(e =>
+            !IsTherapist() ||
+            EF.Property<AudioSubmission>(e, "AudioSubmission") == null ||
+            scope.Contains(EF.Property<AudioSubmission>(e, "AudioSubmission").ChildId));
+
+        // Filter FeedbackReport via navigation to AudioSubmission
+        // This uses SQL JOIN instead of subquery
+        modelBuilder.Entity<FeedbackReport>().HasQueryFilter(e =>
+            !IsTherapist() ||
+            EF.Property<AudioSubmission>(e, "AudioSubmission") == null ||
+            scope.Contains(EF.Property<AudioSubmission>(e, "AudioSubmission").ChildId));
+
+        // Add index on ChildId for better filter performance
+        modelBuilder.Entity<AudioSubmission>().HasIndex(x => x.ChildId);
+        modelBuilder.Entity<FeedbackReport>().HasIndex(x => x.SubmissionId);
+        modelBuilder.Entity<FeatureVector>().HasIndex(x => x.SubmissionId);
     }
 }

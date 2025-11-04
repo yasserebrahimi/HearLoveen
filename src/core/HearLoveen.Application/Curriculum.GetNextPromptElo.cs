@@ -6,6 +6,22 @@ namespace HearLoveen.Application.Curriculum;
 
 public static class GetNextPromptElo
 {
+    // Constants for ELO ratings and thresholds
+    private const double DefaultRating = 1000.0;
+    private const double MasteryThreshold = 1050.0;
+    private const int DefaultDifficulty = 1;
+    private const string DefaultFocusPhonemes = "R,S";
+
+    // Phoneme to word mapping - should be loaded from database in production
+    private static readonly Dictionary<string, string> PhonemeToWord = new()
+    {
+        ["R"] = "car",
+        ["S"] = "bus",
+        ["CH"] = "chair",
+        ["L"] = "ball"
+    };
+    private const string DefaultWord = "mama";
+
     public record Query(Guid ChildId) : IRequest<Result>;
     public record Result(string[] Words, string[] Phonemes, int Difficulty);
 
@@ -16,25 +32,59 @@ public static class GetNextPromptElo
 
         public async Task<Result> Handle(Query request, CancellationToken ct)
         {
-            var cur = await _db.ChildCurricula.AsNoTracking().FirstOrDefaultAsync(x => x.ChildId == request.ChildId, ct);
-            var pre = await _db.PhonemePrerequisites.AsNoTracking().ToListAsync(ct);
-            var ratings = await _db.PhonemeRatings.AsNoTracking().Where(x => x.ChildId==request.ChildId).ToListAsync(ct);
+            // Load curriculum and ratings in parallel
+            var curriculumTask = _db.ChildCurricula
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.ChildId == request.ChildId, ct);
 
-            var pool = (cur?.FocusPhonemesCsv ?? "R,S").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Distinct().ToList();
+            var ratingsTask = _db.PhonemeRatings
+                .AsNoTracking()
+                .Where(x => x.ChildId == request.ChildId)
+                .ToDictionaryAsync(x => x.Phoneme, x => x.Rating, ct);
 
-            bool Satisfied(string p) {
-                foreach (var edge in pre.Where(e => e.Phoneme==p)) {
-                    var r = ratings.FirstOrDefault(x => x.Phoneme==edge.Requires)?.Rating ?? 1000;
-                    if (r < 1050) return false;
+            await Task.WhenAll(curriculumTask, ratingsTask);
+
+            var cur = curriculumTask.Result;
+            var ratingsDict = ratingsTask.Result;
+
+            var pool = (cur?.FocusPhonemesCsv ?? DefaultFocusPhonemes)
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Distinct()
+                .ToList();
+
+            // Load only prerequisites for phonemes in the pool
+            var prerequisites = await _db.PhonemePrerequisites
+                .AsNoTracking()
+                .Where(p => pool.Contains(p.Phoneme))
+                .ToListAsync(ct);
+
+            var prereqLookup = prerequisites.ToLookup(p => p.Phoneme);
+
+            bool IsSatisfied(string phoneme)
+            {
+                foreach (var edge in prereqLookup[phoneme])
+                {
+                    var rating = ratingsDict.GetValueOrDefault(edge.Requires, DefaultRating);
+                    if (rating < MasteryThreshold)
+                        return false;
                 }
                 return true;
             }
 
-            var cand = pool.Where(Satisfied).ToList();
-            if (cand.Count==0) cand = pool;
-            var ordered = cand.OrderBy(p => ratings.FirstOrDefault(x => x.Phoneme==p)?.Rating ?? 1000).Take(3).ToArray();
-            var words = ordered.Select(p => p switch { "R"=>"car","S"=>"bus","CH"=>"chair","L"=>"ball", _=>"mama"}).ToArray();
-            return new Result(words, ordered, cur?.Difficulty ?? 1);
+            var candidates = pool.Where(IsSatisfied).ToList();
+            if (candidates.Count == 0)
+                candidates = pool;
+
+            var ordered = candidates
+                .OrderBy(p => ratingsDict.GetValueOrDefault(p, DefaultRating))
+                .Take(3)
+                .ToArray();
+
+            var words = ordered
+                .Select(p => PhonemeToWord.GetValueOrDefault(p, DefaultWord))
+                .ToArray();
+
+            return new Result(words, ordered, cur?.Difficulty ?? DefaultDifficulty);
         }
     }
 }
