@@ -1,0 +1,130 @@
+{
+  "dashboard": {
+    "title": "HearLoveen Business Metrics",
+    "tags": ["business", "metrics", "kpis"],
+    "timezone": "UTC",
+    "refresh": "1m",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Daily Active Users",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count(count_over_time(user_active_sessions[24h]))",
+            "legendFormat": "DAU"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4}
+      },
+      {
+        "id": 2,
+        "title": "Audio Submissions (Today)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(audio_submissions_total[24h]))",
+            "legendFormat": "Submissions"
+          }
+        ],
+        "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4}
+      },
+      {
+        "id": 3,
+        "title": "Processing Success Rate",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "sum(rate(audio_processing_total{status=\"success\"}[1h])) / sum(rate(audio_processing_total[1h]))",
+            "legendFormat": "Success Rate"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4}
+      },
+      {
+        "id": 4,
+        "title": "Average Pronunciation Score",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "avg(pronunciation_score)",
+            "legendFormat": "Avg Score"
+          }
+        ],
+        "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4}
+      },
+      {
+        "id": 5,
+        "title": "User Retention (7 days)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(user_sessions[7d])) / sum(rate(user_sessions[14d]))",
+            "legendFormat": "Retention Rate"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8}
+      },
+      {
+        "id": 6,
+        "title": "Submissions by Hour of Day",
+        "type": "heatmap",
+        "targets": [
+          {
+            "expr": "sum by (hour) (increase(audio_submissions_total[1h]))",
+            "legendFormat": "Hour {{hour}}"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8}
+      },
+      {
+        "id": 7,
+        "title": "Therapist Response Time (hours)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "avg(therapist_response_time_hours)",
+            "legendFormat": "Avg Response Time"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 12, "w": 6, "h": 4}
+      },
+      {
+        "id": 8,
+        "title": "Children Streak (consecutive days)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "avg(child_streak_days)",
+            "legendFormat": "Avg Streak"
+          }
+        ],
+        "gridPos": {"x": 6, "y": 12, "w": 6, "h": 4}
+      },
+      {
+        "id": 9,
+        "title": "MRR (Monthly Recurring Revenue)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(monthly_revenue_euros)",
+            "legendFormat": "€{{value}}"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 12, "w": 6, "h": 4}
+      },
+      {
+        "id": 10,
+        "title": "Churn Rate (%)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(rate(user_churn[30d])) / sum(rate(user_total[30d]))",
+            "legendFormat": "Churn %"
+          }
+        ],
+        "gridPos": {"x": 18, "y": 12, "w": 6, "h": 4}
+      }
+    ]
+  }
+}

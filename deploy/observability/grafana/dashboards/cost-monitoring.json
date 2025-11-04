@@ -1,0 +1,142 @@
+{
+  "dashboard": {
+    "title": "Cost Monitoring & FinOps",
+    "tags": ["cost", "finops", "budget"],
+    "timezone": "UTC",
+    "refresh": "5m",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Daily Cost (€)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(azure_cost_euros[24h]))",
+            "legendFormat": "€{{value}}"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4}
+      },
+      {
+        "id": 2,
+        "title": "Monthly Burn Rate (€)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(azure_cost_euros[30d]))",
+            "legendFormat": "€{{value}}/mo"
+          }
+        ],
+        "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4}
+      },
+      {
+        "id": 3,
+        "title": "Cost per User (€)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(azure_cost_euros[30d])) / count(user_active_sessions[30d])",
+            "legendFormat": "€{{value}}/user"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4}
+      },
+      {
+        "id": 4,
+        "title": "Cost per Submission (€)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(azure_cost_euros[30d])) / sum(increase(audio_submissions_total[30d]))",
+            "legendFormat": "€{{value}}/submission"
+          }
+        ],
+        "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4}
+      },
+      {
+        "id": 5,
+        "title": "Cost by Service",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum by (service) (azure_cost_euros)",
+            "legendFormat": "{{service}}"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8}
+      },
+      {
+        "id": 6,
+        "title": "Cost Trend (30 days)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(azure_cost_euros[1d]))",
+            "legendFormat": "Daily Cost"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8}
+      },
+      {
+        "id": 7,
+        "title": "Storage Costs (€)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(azure_storage_cost_euros)",
+            "legendFormat": "Storage"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 12, "w": 8, "h": 6}
+      },
+      {
+        "id": 8,
+        "title": "Compute Costs (€)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(azure_compute_cost_euros)",
+            "legendFormat": "Compute"
+          }
+        ],
+        "gridPos": {"x": 8, "y": 12, "w": 8, "h": 6}
+      },
+      {
+        "id": 9,
+        "title": "Database Costs (€)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(azure_database_cost_euros)",
+            "legendFormat": "Database"
+          }
+        ],
+        "gridPos": {"x": 16, "y": 12, "w": 8, "h": 6}
+      },
+      {
+        "id": 10,
+        "title": "Budget Alert (Monthly)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "(sum(increase(azure_cost_euros[30d])) / budget_monthly_euros) * 100",
+            "legendFormat": "{{value}}% of budget"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 18, "w": 12, "h": 4}
+      },
+      {
+        "id": 11,
+        "title": "Cost Efficiency Score",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "(monthly_revenue_euros / sum(increase(azure_cost_euros[30d]))) * 100",
+            "legendFormat": "Revenue/Cost Ratio"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 18, "w": 12, "h": 4}
+      }
+    ]
+  }
+}
