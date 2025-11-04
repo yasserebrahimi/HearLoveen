@@ -21,6 +21,8 @@ def gaussian_noise(d, sigma):
     return [random.gauss(0, sigma) for _ in range(d)]
 
 def aggregate(client_updates: List[List[float]], cfg: DPConfig) -> List[float]:
+    if not client_updates:
+        return []
     # Clip
     clipped = [clip_gradients(u, cfg.clip_norm) for u in client_updates]
     # Average
