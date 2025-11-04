@@ -6,6 +6,7 @@ using HearLoveen.Infrastructure.Persistence;
 using HearLoveen.Infrastructure.Storage;
 using HearLoveen.Infrastructure;
 using HearLoveen.Api.Auth;
+using HearLoveen.Api.Features;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -13,14 +14,11 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Microsoft.AspNetCore.Authorization;
-using HearLoveen.Api.Auth;
-
-var builder = WebApplication.CreateBuilder(args);
-using HearLoveen.Api.Features;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
+
+var builder = WebApplication.CreateBuilder(args);
 
 // Azure AD B2C (JWT Bearer)
 builder.Services
@@ -90,10 +88,6 @@ builder.Services.AddAuthorization(options => {
 });
 
 builder.Services.AddOpenTelemetry()
-    ;
-builder.Services.AddSingleton<IFeatureFlags, ConfigFeatureFlags>();
-builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
-
     .ConfigureResource(r => r.AddService("HearLoveen.Api"))
     .WithTracing(t => t
         .AddAspNetCoreInstrumentation()
@@ -103,6 +97,9 @@ builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
         .AddAspNetCoreInstrumentation()
         .AddRuntimeInstrumentation()
         .AddOtlpExporter());
+
+builder.Services.AddSingleton<IFeatureFlags, ConfigFeatureFlags>();
+builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 
 var app = builder.Build();
 app.UseAuthentication();

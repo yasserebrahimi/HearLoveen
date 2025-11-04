@@ -12,6 +12,6 @@
     <PackageReference Include="Azure.Identity" Version="1.12.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\core\HearLoveen.Domain\HearLoveen.Domain.csproj" />
+    <ProjectReference Include="..\..\core\HearLoveen.Domain\HearLoveen.Domain.csproj" />
   </ItemGroup>
 </Project>
