@@ -6,6 +6,8 @@ using HearLoveen.Infrastructure.Persistence;
 using HearLoveen.Infrastructure.Storage;
 using HearLoveen.Infrastructure;
 using HearLoveen.Api.Auth;
+using HearLoveen.Api.Features;
+using HearLoveen.Api.Middleware;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -13,14 +15,10 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Microsoft.AspNetCore.Authorization;
-using HearLoveen.Api.Auth;
-
-var builder = WebApplication.CreateBuilder(args);
-using HearLoveen.Api.Features;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
-using Microsoft.AspNetCore.Authorization;
+
+var builder = WebApplication.CreateBuilder(args);
 
 // Azure AD B2C (JWT Bearer)
 builder.Services
@@ -89,11 +87,12 @@ builder.Services.AddAuthorization(options => {
     options.AddPolicy("TherapistAssigned", policy => policy.RequireRole("Therapist").AddRequirements(new TherapistAssignedRequirement()));
 });
 
-builder.Services.AddOpenTelemetry()
-    ;
+// Feature flags and current user services
 builder.Services.AddSingleton<IFeatureFlags, ConfigFeatureFlags>();
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 
+// OpenTelemetry configuration
+builder.Services.AddOpenTelemetry()
     .ConfigureResource(r => r.AddService("HearLoveen.Api"))
     .WithTracing(t => t
         .AddAspNetCoreInstrumentation()
@@ -105,6 +104,12 @@ builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
         .AddOtlpExporter());
 
 var app = builder.Build();
+
+// Global exception handling (must be first in pipeline)
+app.UseGlobalExceptionHandler();
+
+app.UseSerilogRequestLogging();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -168,7 +173,13 @@ app.MapPost("/api/v1/curriculum/feedback",
 .RequireAuthorization();
 
 app.MapHealthChecks("/health");
-if (app.Environment.IsDevelopment()) { using var scope = app.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<HearLoveen.Infrastructure.Persistence.AppDbContext>(); await HearLoveen.Infrastructure.Seeding.DbSeeder.SeedAsync(db); }
-app.UseSerilogRequestLogging();
+
+// Seed database in development
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await HearLoveen.Infrastructure.Seeding.DbSeeder.SeedAsync(db);
+}
 
 app.Run();

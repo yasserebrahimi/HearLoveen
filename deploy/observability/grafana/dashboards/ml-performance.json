@@ -1,0 +1,126 @@
+{
+  "dashboard": {
+    "title": "ML Model Performance",
+    "tags": ["ml", "ai", "model"],
+    "timezone": "UTC",
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Inference Latency (p50, p95, p99)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(ml_inference_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(ml_inference_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(ml_inference_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p99"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8}
+      },
+      {
+        "id": 2,
+        "title": "Model Confidence Distribution",
+        "type": "histogram",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.5, sum(rate(ml_confidence_score_bucket[5m])) by (le))",
+            "legendFormat": "Confidence"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8}
+      },
+      {
+        "id": 3,
+        "title": "Transcription Accuracy",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "avg(ml_transcription_accuracy)",
+            "legendFormat": "Accuracy"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 8, "w": 6, "h": 4}
+      },
+      {
+        "id": 4,
+        "title": "Pronunciation Score Avg",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "avg(pronunciation_score)",
+            "legendFormat": "Score"
+          }
+        ],
+        "gridPos": {"x": 6, "y": 8, "w": 6, "h": 4}
+      },
+      {
+        "id": 5,
+        "title": "Model Drift (KL Divergence)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "ml_model_drift_kl_divergence",
+            "legendFormat": "KL Divergence"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8}
+      },
+      {
+        "id": 6,
+        "title": "Inference Throughput (req/s)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(ml_inference_total[1m]))",
+            "legendFormat": "Throughput"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8}
+      },
+      {
+        "id": 7,
+        "title": "GPU Utilization (%)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "avg(gpu_utilization_percent)",
+            "legendFormat": "GPU %"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8}
+      },
+      {
+        "id": 8,
+        "title": "Model Version",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "ml_model_version",
+            "legendFormat": "Version {{version}}"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 20, "w": 6, "h": 4}
+      },
+      {
+        "id": 9,
+        "title": "Failed Inferences",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(ml_inference_total{status=\"error\"}[1h]))",
+            "legendFormat": "Failures"
+          }
+        ],
+        "gridPos": {"x": 6, "y": 20, "w": 6, "h": 4}
+      }
+    ]
+  }
+}
