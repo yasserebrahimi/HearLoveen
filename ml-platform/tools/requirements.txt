@@ -1,0 +1,7 @@
+torch>=2.0.0
+openai-whisper>=20230314
+onnx>=1.14.0
+onnxruntime>=1.15.0
+onnxruntime-gpu>=1.15.0  # Optional, for GPU support
+numpy>=1.24.0
+librosa>=0.10.0

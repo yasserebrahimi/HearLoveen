@@ -1,3 +1,47 @@
 {
-  "greeting": "Hello, Therapist!"
+  "appTitle": "HearLoveen Therapist Dashboard",
+  "nav": {
+    "dashboard": "Dashboard",
+    "patients": "Patients",
+    "sessions": "Sessions",
+    "analytics": "Analytics",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "welcome": "Welcome back",
+    "overview": "Overview",
+    "totalPatients": "Total Patients",
+    "activeSessions": "Active Sessions",
+    "averageProgress": "Average Progress",
+    "recentSessions": "Recent Sessions"
+  },
+  "patient": {
+    "details": "Patient Details",
+    "progress": "Progress",
+    "sessions": "Sessions",
+    "pronunciation": "Pronunciation Score",
+    "emotion": "Emotional State",
+    "viewDetails": "View Details"
+  },
+  "session": {
+    "title": "Session Analysis",
+    "date": "Date",
+    "duration": "Duration",
+    "score": "Score",
+    "transcription": "Transcription",
+    "emotionAnalysis": "Emotion Analysis",
+    "pronunciationFeedback": "Pronunciation Feedback",
+    "xaiExplanation": "AI Explanation"
+  },
+  "xai": {
+    "title": "Explainable AI Insights",
+    "confidence": "Confidence",
+    "factors": "Contributing Factors",
+    "recommendations": "Recommendations"
+  },
+  "settings": {
+    "language": "Language",
+    "theme": "Theme",
+    "notifications": "Notifications"
+  }
 }

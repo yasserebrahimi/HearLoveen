@@ -1,3 +1,47 @@
 {
-  "greeting": "Hallo, Therapeut!"
+  "appTitle": "HearLoveen Therapeuten-Dashboard",
+  "nav": {
+    "dashboard": "Dashboard",
+    "patients": "Patienten",
+    "sessions": "Sitzungen",
+    "analytics": "Analytik",
+    "settings": "Einstellungen"
+  },
+  "dashboard": {
+    "welcome": "Willkommen zurück",
+    "overview": "Übersicht",
+    "totalPatients": "Gesamtpatienten",
+    "activeSessions": "Aktive Sitzungen",
+    "averageProgress": "Durchschnittlicher Fortschritt",
+    "recentSessions": "Letzte Sitzungen"
+  },
+  "patient": {
+    "details": "Patientendetails",
+    "progress": "Fortschritt",
+    "sessions": "Sitzungen",
+    "pronunciation": "Aussprachebewertung",
+    "emotion": "Emotionaler Zustand",
+    "viewDetails": "Details anzeigen"
+  },
+  "session": {
+    "title": "Sitzungsanalyse",
+    "date": "Datum",
+    "duration": "Dauer",
+    "score": "Punktzahl",
+    "transcription": "Transkription",
+    "emotionAnalysis": "Emotionsanalyse",
+    "pronunciationFeedback": "Aussprachefeedback",
+    "xaiExplanation": "KI-Erklärung"
+  },
+  "xai": {
+    "title": "Erklärbare KI-Einblicke",
+    "confidence": "Vertrauen",
+    "factors": "Beitragende Faktoren",
+    "recommendations": "Empfehlungen"
+  },
+  "settings": {
+    "language": "Sprache",
+    "theme": "Thema",
+    "notifications": "Benachrichtigungen"
+  }
 }
