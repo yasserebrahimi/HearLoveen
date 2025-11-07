@@ -88,20 +88,20 @@ This will start the following services:
 ### **System Architecture**
 
 ```mermaid
-graph TD;
-    A[Frontend (React/Vite)] --> B[API Gateway (ASP.NET Core)];
-    B --> C[AudioService (Microservice)];
-    B --> D[AnalysisService (Microservice)];
-    B --> E[NotificationService (Microservice)];
-    B --> F[UserService (Microservice)];
-    B --> G[IoTService (Microservice)];
-    C --> H[Audio File Storage (Blob Storage)];
-    D --> I[ML Models (Whisper, CNN)];
-    F --> J[PostgreSQL Database];
-    F --> K[Redis Cache];
-    G --> L[IoT Device Telemetry (Azure IoT Hub)];
-    B --> M[AnalysisProxy (Proxy to AI Service)];
-    M --> I; 
+graph TD
+    A[Frontend (React/Vite)] --> B[API Gateway (ASP.NET Core)]
+    B --> C[AudioService (Microservice)]
+    B --> D[AnalysisService (Microservice)]
+    B --> E[NotificationService (Microservice)]
+    B --> F[UserService (Microservice)]
+    B --> G[IoTService (Microservice)]
+    C --> H[Audio File Storage (Blob Storage)]
+    D --> I[ML Models (Whisper, CNN)]
+    F --> J[PostgreSQL Database]
+    F --> K[Redis Cache]
+    G --> L[IoT Device Telemetry (Azure IoT Hub)]
+    B --> M[AnalysisProxy (Proxy to AI Service)]
+    M --> I 
 ```
 
 ### **Service Flow**:
