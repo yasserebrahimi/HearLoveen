@@ -88,7 +88,7 @@ This will start the following services:
 ### **System Architecture**
 
 ```mermaid
-graph TD
+graph LR
     A[Frontend (React/Vite)] --> B[API Gateway (ASP.NET Core)]
     B --> C[AudioService (Microservice)]
     B --> D[AnalysisService (Microservice)]
