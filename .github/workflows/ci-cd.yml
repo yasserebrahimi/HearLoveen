@@ -40,47 +40,142 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-      
-      - name: Install dependencies
-        working-directory: ./web-dashboard
+          node-version: '20'
+
+      - name: Install dependencies (Therapist Dashboard)
+        working-directory: ./apps/therapist-dashboard
         run: npm ci
-      
-      - name: Run tests
-        working-directory: ./web-dashboard
-        run: npm test
-      
-      - name: Build
-        working-directory: ./web-dashboard
+
+      - name: Run tests (Therapist Dashboard)
+        working-directory: ./apps/therapist-dashboard
+        run: npm test -- --passWithNoTests
+
+      - name: Build (Therapist Dashboard)
+        working-directory: ./apps/therapist-dashboard
         run: npm run build
 
-  build-and-push:
-    needs: [test-backend, test-frontend]
+  test-mobile:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
-      
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies (Mobile App)
+        working-directory: ./mobile-app
+        run: npm ci
+
+      - name: Run tests (Mobile App)
+        working-directory: ./mobile-app
+        run: npm test -- --passWithNoTests
+
+  test-ml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        working-directory: ./ml-platform/inference/api
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run tests
+        working-directory: ./ml-platform/inference/api
+        run: pytest -v --tb=short
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  build-and-push:
+    needs: [test-backend, test-frontend, test-mobile, test-ml, security-scan]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    strategy:
+      matrix:
+        service:
+          - name: api-gateway
+            context: .
+            dockerfile: src/ApiGateway/Dockerfile
+          - name: audio-service
+            context: .
+            dockerfile: src/AudioService/Dockerfile
+          - name: analysis-service
+            context: .
+            dockerfile: src/AnalysisService/Dockerfile
+          - name: notification-service
+            context: .
+            dockerfile: src/NotificationService/Dockerfile
+          - name: user-service
+            context: .
+            dockerfile: src/UserService/Dockerfile
+          - name: iot-service
+            context: .
+            dockerfile: src/IoTService/Dockerfile
+          - name: analysis-proxy
+            context: ./services/AnalysisProxy
+            dockerfile: Dockerfile
+          - name: privacy-api
+            context: ./services/Privacy.API
+            dockerfile: Dockerfile
+          - name: analytics
+            context: ./services/Analytics
+            dockerfile: Dockerfile
+          - name: dsr-worker
+            context: ./workers/dsr-worker
+            dockerfile: Dockerfile
+          - name: ml-api
+            context: ./ml-platform/inference/api
+            dockerfile: Dockerfile
+          - name: therapist-dashboard
+            context: ./apps/therapist-dashboard
+            dockerfile: Dockerfile
+    steps:
+      - uses: actions/checkout@v3
+
       - name: Azure Container Registry Login
         uses: azure/docker-login@v1
         with:
           login-server: ${{ env.ACR_NAME }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
-      
-      - name: Build and push API Gateway
+
+      - name: Build and push ${{ matrix.service.name }}
         run: |
-          docker build -t ${{ env.ACR_NAME }}/api-gateway:${{ github.sha }} -f src/ApiGateway/Dockerfile .
-          docker push ${{ env.ACR_NAME }}/api-gateway:${{ github.sha }}
-      
-      - name: Build and push Audio Service
-        run: |
-          docker build -t ${{ env.ACR_NAME }}/audio-service:${{ github.sha }} -f src/AudioService/Dockerfile .
-          docker push ${{ env.ACR_NAME }}/audio-service:${{ github.sha }}
+          docker build -t ${{ env.ACR_NAME }}/${{ matrix.service.name }}:${{ github.sha }} \
+                       -t ${{ env.ACR_NAME }}/${{ matrix.service.name }}:latest \
+                       -f ${{ matrix.service.dockerfile }} \
+                       ${{ matrix.service.context }}
+          docker push ${{ env.ACR_NAME }}/${{ matrix.service.name }}:${{ github.sha }}
+          docker push ${{ env.ACR_NAME }}/${{ matrix.service.name }}:latest
 
   deploy:
     needs: build-and-push
@@ -88,19 +183,49 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
+
       - name: Get AKS credentials
         run: |
           az aks get-credentials --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AKS_CLUSTER_NAME }}
-      
-      - name: Deploy to AKS
+
+      - name: Deploy database migrations
         run: |
+          kubectl apply -f deploy/k8s/postgres-init-job.yaml
+          kubectl wait --for=condition=complete --timeout=300s job/postgres-migration
+
+      - name: Deploy all services to AKS
+        run: |
+          # Update all deployments with new images
           kubectl set image deployment/api-gateway api-gateway=${{ env.ACR_NAME }}/api-gateway:${{ github.sha }}
           kubectl set image deployment/audio-service audio-service=${{ env.ACR_NAME }}/audio-service:${{ github.sha }}
-          kubectl rollout status deployment/api-gateway
-          kubectl rollout status deployment/audio-service
+          kubectl set image deployment/analysis-service analysis-service=${{ env.ACR_NAME }}/analysis-service:${{ github.sha }}
+          kubectl set image deployment/notification-service notification-service=${{ env.ACR_NAME }}/notification-service:${{ github.sha }}
+          kubectl set image deployment/user-service user-service=${{ env.ACR_NAME }}/user-service:${{ github.sha }}
+          kubectl set image deployment/iot-service iot-service=${{ env.ACR_NAME }}/iot-service:${{ github.sha }}
+          kubectl set image deployment/analysis-proxy analysis-proxy=${{ env.ACR_NAME }}/analysis-proxy:${{ github.sha }}
+          kubectl set image deployment/privacy-api privacy-api=${{ env.ACR_NAME }}/privacy-api:${{ github.sha }}
+          kubectl set image deployment/analytics analytics=${{ env.ACR_NAME }}/analytics:${{ github.sha }}
+          kubectl set image deployment/dsr-worker dsr-worker=${{ env.ACR_NAME }}/dsr-worker:${{ github.sha }}
+          kubectl set image deployment/ml-api ml-api=${{ env.ACR_NAME }}/ml-api:${{ github.sha }}
+          kubectl set image deployment/therapist-dashboard therapist-dashboard=${{ env.ACR_NAME }}/therapist-dashboard:${{ github.sha }}
+
+      - name: Wait for rollout completion
+        run: |
+          kubectl rollout status deployment/api-gateway --timeout=5m
+          kubectl rollout status deployment/audio-service --timeout=5m
+          kubectl rollout status deployment/analysis-service --timeout=5m
+          kubectl rollout status deployment/analysis-proxy --timeout=5m
+          kubectl rollout status deployment/privacy-api --timeout=5m
+          kubectl rollout status deployment/analytics --timeout=5m
+          kubectl rollout status deployment/ml-api --timeout=5m
+          kubectl rollout status deployment/therapist-dashboard --timeout=5m
+
+      - name: Run smoke tests
+        run: |
+          kubectl run smoke-test --image=curlimages/curl --rm -it --restart=Never -- \
+            curl -f http://api-gateway/health || exit 1
