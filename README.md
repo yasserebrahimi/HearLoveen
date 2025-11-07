@@ -45,25 +45,48 @@ docker-compose up -d
 ```
 
 This starts:
-- API Gateway (port 5000)
-- Microservices (AudioService, AnalysisService, UserService, etc.)
-- PostgreSQL, Redis, Kafka
-- ML API (port 8000)
-- Prometheus & Grafana
+- **API Gateway** (port 5000) - Main entry point
+- **Microservices:**
+  - AudioService (port 5001)
+  - AnalysisService (port 5002)
+  - NotificationService (port 5003)
+  - UserService (port 5004)
+  - IoTService (port 5005)
+  - AnalysisProxy (port 5100) - OIDC-authenticated XAI proxy
+  - Privacy.API (port 5200) - GDPR DSR endpoints
+  - Analytics (port 5300) - LTV/CAC business metrics
+- **Workers:**
+  - DSR Worker (background) - Async GDPR data processing
+- **Infrastructure:**
+  - PostgreSQL (port 5432)
+  - Redis (port 6379)
+  - RabbitMQ (ports 5672, 15672 management UI)
+  - Kafka (port 9092) + Zookeeper
+- **ML & Monitoring:**
+  - ML API (port 8000) - ONNX inference for STT & emotion
+  - Prometheus (port 9090)
+  - Grafana (port 3000)
+- **Frontend:**
+  - Therapist Dashboard (port 5173) - React/Vite with XAI visualization
 
 3. **Access the applications:**
 - **API Gateway:** http://localhost:5000
-- **Web Dashboard:** Build and run separately (see below)
+- **Therapist Dashboard:** http://localhost:5173 (with i18n: EN/DE/NL)
 - **ML API:** http://localhost:8000/docs (Swagger UI)
+- **RabbitMQ Management:** http://localhost:15672 (guest/guest)
 - **Grafana:** http://localhost:3000 (admin/your_password)
+- **AnalysisProxy:** http://localhost:5100 (requires OIDC token)
+- **Privacy.API:** http://localhost:5200 (DSR endpoints)
+- **Analytics:** http://localhost:5300 (business metrics)
 
-### Web Dashboard Development
+### Therapist Dashboard Development
 
 ```bash
-cd web-dashboard
+cd apps/therapist-dashboard
 npm install
 npm run dev
 # Access at http://localhost:5173
+# Supports EN, DE, NL languages with i18n
 ```
 
 ### Mobile App Development
@@ -85,16 +108,60 @@ dotnet test
 cd ml-platform/inference/api
 pytest
 
-# Web dashboard tests
-cd web-dashboard
+# Therapist dashboard tests
+cd apps/therapist-dashboard
 npm test
 ```
 
+## Key Features Implemented
+
+### 🔒 Security & Compliance
+- **OIDC/JWKS Authentication:** Azure AD B2C integration with JWT validation
+- **GDPR Compliance:** DSR endpoints for data export/deletion with async processing
+- **MDR Compliance:** ISO 13485, IEC 62304, ISO 14971 documentation
+- **Security Best Practices:** Parameterized queries, rate limiting, CORS, CSP headers
+- **Audit Logging:** 7-year retention for all critical operations
+
+### 🤖 AI/ML Capabilities
+- **ONNX Runtime:** 3-5x faster inference than PyTorch
+- **Speech-to-Text:** Whisper model with 94% accuracy
+- **Emotion Analysis:** CNN-based emotion detection
+- **XAI (Explainable AI):** Visualization of AI decision factors
+
+### 📱 Mobile Features
+- **BLE Integration:** ASHA and MFi protocol support
+- **Hearing Aid Connectivity:** Auto-reconnection, volume control, battery monitoring
+- **Real-time Audio Streaming:** Low-latency audio processing
+
+### 📊 Business Analytics
+- **LTV/CAC Metrics:** Customer lifetime value and acquisition cost tracking
+- **Cohort Analysis:** User retention and engagement metrics
+- **Health Monitoring:** Real-time system health assessment
+
+### 🌍 Internationalization
+- **Multi-language Support:** English, German, Dutch (EN/DE/NL)
+- **i18next Integration:** Dynamic language switching in therapist dashboard
+
+### 🎨 Therapist Dashboard
+- **Modern UI:** React 18 + TypeScript + Material-UI
+- **Real-time Analytics:** Patient progress tracking and session analysis
+- **XAI Visualization:** Transparent AI decision explanations
+- **Responsive Design:** Mobile-friendly interface
+
 ## Documentation
+
+### Business & Strategy
 - [Executive Summary](docs/business/01_EXECUTIVE_SUMMARY.md)
 - [Pitch Deck](docs/business/02_PITCH_DECK.md)
+
+### Technical
 - [Architecture](docs/technical/ARCHITECTURE.md)
 - [Setup Guide](SETUP_GUIDE.md)
+- [Comprehensive Audit Report](COMPREHENSIVE_AUDIT_REPORT.md)
+
+### Security & Compliance
+- [Security Implementation Guide](docs/security/SECURITY_IMPLEMENTATION.md)
+- [MDR Compliance Documentation](docs/compliance/MDR_COMPLIANCE.md)
 
 ## CI/CD
 

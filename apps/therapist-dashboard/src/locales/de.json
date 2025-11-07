@@ -16,18 +16,23 @@
     "recentSessions": "Letzte Sitzungen"
   },
   "patient": {
+    "patients": "Patienten",
     "details": "Patientendetails",
     "progress": "Fortschritt",
     "sessions": "Sitzungen",
     "pronunciation": "Aussprachebewertung",
     "emotion": "Emotionaler Zustand",
-    "viewDetails": "Details anzeigen"
+    "viewDetails": "Details anzeigen",
+    "yearsOld": "Jahre alt",
+    "lastSession": "Letzte Sitzung"
   },
   "session": {
     "title": "Sitzungsanalyse",
+    "overview": "Sitzungsübersicht",
     "date": "Datum",
     "duration": "Dauer",
     "score": "Punktzahl",
+    "overallScore": "Gesamtpunktzahl",
     "transcription": "Transkription",
     "emotionAnalysis": "Emotionsanalyse",
     "pronunciationFeedback": "Aussprachefeedback",

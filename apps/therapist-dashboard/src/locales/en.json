@@ -16,18 +16,23 @@
     "recentSessions": "Recent Sessions"
   },
   "patient": {
+    "patients": "Patients",
     "details": "Patient Details",
     "progress": "Progress",
     "sessions": "Sessions",
     "pronunciation": "Pronunciation Score",
     "emotion": "Emotional State",
-    "viewDetails": "View Details"
+    "viewDetails": "View Details",
+    "yearsOld": "years old",
+    "lastSession": "Last session"
   },
   "session": {
     "title": "Session Analysis",
+    "overview": "Session Overview",
     "date": "Date",
     "duration": "Duration",
     "score": "Score",
+    "overallScore": "Overall Score",
     "transcription": "Transcription",
     "emotionAnalysis": "Emotion Analysis",
     "pronunciationFeedback": "Pronunciation Feedback",
