@@ -1,0 +1,52 @@
+{
+  "appTitle": "HearLoveen Therapeut Dashboard",
+  "nav": {
+    "dashboard": "Dashboard",
+    "patients": "Patiënten",
+    "sessions": "Sessies",
+    "analytics": "Analytics",
+    "settings": "Instellingen"
+  },
+  "dashboard": {
+    "welcome": "Welkom terug",
+    "overview": "Overzicht",
+    "totalPatients": "Totaal Patiënten",
+    "activeSessions": "Actieve Sessies",
+    "averageProgress": "Gemiddelde Voortgang",
+    "recentSessions": "Recente Sessies"
+  },
+  "patient": {
+    "patients": "Patiënten",
+    "details": "Patiëntdetails",
+    "progress": "Voortgang",
+    "sessions": "Sessies",
+    "pronunciation": "Uitspraakscore",
+    "emotion": "Emotionele Toestand",
+    "viewDetails": "Bekijk Details",
+    "yearsOld": "jaar oud",
+    "lastSession": "Laatste sessie"
+  },
+  "session": {
+    "title": "Sessie Analyse",
+    "overview": "Sessie Overzicht",
+    "date": "Datum",
+    "duration": "Duur",
+    "score": "Score",
+    "overallScore": "Totale Score",
+    "transcription": "Transcriptie",
+    "emotionAnalysis": "Emotie Analyse",
+    "pronunciationFeedback": "Uitspraak Feedback",
+    "xaiExplanation": "AI Uitleg"
+  },
+  "xai": {
+    "title": "Verklaarbare AI Inzichten",
+    "confidence": "Vertrouwen",
+    "factors": "Bijdragende Factoren",
+    "recommendations": "Aanbevelingen"
+  },
+  "settings": {
+    "language": "Taal",
+    "theme": "Thema",
+    "notifications": "Meldingen"
+  }
+}
