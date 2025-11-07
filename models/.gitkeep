@@ -1,0 +1,3 @@
+# This directory contains ONNX models
+# Models are not committed to git due to size
+# Run: python download_models.py to setup models

@@ -47,13 +47,19 @@ services:
     environment:
     - ASPNETCORE_ENVIRONMENT=Development
     - ASPNETCORE_URLS=http://+:5002
-    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=postgres;Password=postgres
+    - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB:-hearloveen};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
     - Redis__ConnectionString=redis:6379
     - Kafka__BootstrapServers=kafka:9092
+    - MlApiUrl=http://mlapi:8000
     depends_on:
-    - postgres
-    - redis
-    - kafka
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+      mlapi:
+        condition: service_started
   notificationservice:
     build:
       context: ./src/NotificationService
@@ -63,13 +69,16 @@ services:
     environment:
     - ASPNETCORE_ENVIRONMENT=Development
     - ASPNETCORE_URLS=http://+:5003
-    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=postgres;Password=postgres
+    - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB:-hearloveen};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
     - Redis__ConnectionString=redis:6379
     - Kafka__BootstrapServers=kafka:9092
     depends_on:
-    - postgres
-    - redis
-    - kafka
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
   userservice:
     build:
       context: ./src/UserService
@@ -79,13 +88,16 @@ services:
     environment:
     - ASPNETCORE_ENVIRONMENT=Development
     - ASPNETCORE_URLS=http://+:5004
-    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=postgres;Password=postgres
+    - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB:-hearloveen};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
     - Redis__ConnectionString=redis:6379
     - Kafka__BootstrapServers=kafka:9092
     depends_on:
-    - postgres
-    - redis
-    - kafka
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
   iotservice:
     build:
       context: ./src/IoTService
@@ -95,13 +107,29 @@ services:
     environment:
     - ASPNETCORE_ENVIRONMENT=Development
     - ASPNETCORE_URLS=http://+:5005
-    - ConnectionStrings__DefaultConnection=Host=postgres;Database=hearloveen;Username=postgres;Password=postgres
+    - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB:-hearloveen};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
     - Redis__ConnectionString=redis:6379
     - Kafka__BootstrapServers=kafka:9092
+    - AzureIoTHub__ConnectionString=${AZURE_IOT_HUB_CONNECTION_STRING}
     depends_on:
-    - postgres
-    - redis
-    - kafka
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+  mlapi:
+    build:
+      context: ./ml-platform/inference/api
+      dockerfile: Dockerfile
+    ports:
+    - 8000:8000
+    environment:
+    - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5000}
+    - ML_API_KEY=${ML_API_KEY}
+    - MAX_FILE_SIZE=10485760
+    volumes:
+    - ./models:/models
   postgres:
     image: postgres:14-alpine
     environment:
