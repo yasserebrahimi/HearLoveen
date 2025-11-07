@@ -101,7 +101,7 @@ graph TD
     F --> K[Redis Cache]
     G --> L[IoT Device Telemetry (Azure IoT Hub)]
     B --> M[AnalysisProxy (Proxy to AI Service)]
-    M --> I 
+    M --> I
 ```
 
 ### **Service Flow**:
