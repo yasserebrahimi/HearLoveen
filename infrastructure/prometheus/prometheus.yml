@@ -1,0 +1,101 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'hearloveen-dev'
+    environment: 'development'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  # - "rules/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # API Gateway
+  - job_name: 'apigateway'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['apigateway:5000']
+        labels:
+          service: 'apigateway'
+
+  # Audio Service
+  - job_name: 'audioservice'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['audioservice:5001']
+        labels:
+          service: 'audioservice'
+
+  # Analysis Service
+  - job_name: 'analysisservice'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['analysisservice:5002']
+        labels:
+          service: 'analysisservice'
+
+  # Notification Service
+  - job_name: 'notificationservice'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['notificationservice:5003']
+        labels:
+          service: 'notificationservice'
+
+  # User Service
+  - job_name: 'userservice'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['userservice:5004']
+        labels:
+          service: 'userservice'
+
+  # IoT Service
+  - job_name: 'iotservice'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['iotservice:5005']
+        labels:
+          service: 'iotservice'
+
+  # ML API
+  - job_name: 'mlapi'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['mlapi:8000']
+        labels:
+          service: 'mlapi'
+
+  # PostgreSQL Exporter
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+        labels:
+          service: 'postgres'
+
+  # Redis Exporter
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+        labels:
+          service: 'redis'
+
+  # Kafka Exporter
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka-exporter:9308']
+        labels:
+          service: 'kafka'
