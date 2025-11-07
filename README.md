@@ -7,7 +7,7 @@
 
 ## 🌟 **Overview**
 
-**HearLoveen** is an **enterprise-grade**, **cloud-native**, AI-driven platform designed to provide speech therapy for hearing-impaired children. It utilizes cutting-edge technologies such as **AI models** (Whisper fine-tuned), **Azure Cloud**, and **IoT devices** to deliver personalized and effective speech therapy services to children and their families.
+**HearLoveen** is an **enterprise-grade**, **cloud-native**, AI-driven platform designed to provide speech therapy for hearing-impaired children. Leveraging cutting-edge technologies such as **AI models** (Whisper fine-tuned), **Azure Cloud**, and **IoT devices**, it delivers personalized and effective speech therapy services to children and their families.
 
 - **Target Users**: 500,000+ active users
 - **Traction**: Serving 25+ families with 94% AI accuracy in speech-to-text conversion
@@ -241,7 +241,7 @@ For contributing to **HearLoveen**, refer to:
 
 ---
 
-### **License**: 
+### **License**:
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
 ---
