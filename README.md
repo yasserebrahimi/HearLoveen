@@ -332,7 +332,7 @@ graph TB
     end
 
     subgraph "API & Gateway Layer"
-        G[🚪 YARP API Gateway<br/>Rate Limiting | Auth | Routing]
+        G[🚪 YARP API Gateway<br/>Rate Limiting, Auth, Routing]
     end
 
     subgraph "Microservices - .NET 8"
