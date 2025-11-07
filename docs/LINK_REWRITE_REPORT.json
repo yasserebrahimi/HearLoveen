@@ -1,0 +1,37 @@
+[
+  {
+    "file": "docs/complete-package/QUICK_START.md",
+    "from": "01-clinical-validation/protocols/rct-protocol.md",
+    "to": "../research/clinical/01-clinical-validation/protocols/rct-protocol.md"
+  },
+  {
+    "file": "docs/complete-package/QUICK_START.md",
+    "from": "01-clinical-validation/consent-forms/informed-consent.md",
+    "to": "../research/clinical/01-clinical-validation/consent-forms/informed-consent.md"
+  },
+  {
+    "file": "docs/complete-package/QUICK_START.md",
+    "from": "01-clinical-validation/statistical-analysis/rct_analysis.py",
+    "to": "../research/clinical/01-clinical-validation/statistical-analysis/rct_analysis.py"
+  },
+  {
+    "file": "docs/complete-package/QUICK_START.md",
+    "from": "02-business-model/canvas/business-model-canvas.md",
+    "to": "../research/business/02-business-model/canvas/business-model-canvas.md"
+  },
+  {
+    "file": "docs/complete-package/QUICK_START.md",
+    "from": "03-competitive-analysis/competitive-matrix.md",
+    "to": "../research/business/03-competitive-analysis/competitive-matrix.md"
+  },
+  {
+    "file": "docs/complete-package/QUICK_START.md",
+    "from": "04-explainable-ai/backend/explainable_api.py",
+    "to": "../research/xai/04-explainable-ai/backend/explainable_api.py"
+  },
+  {
+    "file": "docs/complete-package/QUICK_START.md",
+    "from": "05-longitudinal-study/study-design/longitudinal-protocol.md",
+    "to": "../research/clinical/05-longitudinal-study/study-design/longitudinal-protocol.md"
+  }
+]

@@ -1,0 +1,15 @@
+replicaCount: 3
+resources:
+  requests:
+    cpu: 500m
+    memory: 1024Mi
+  limits:
+    cpu: 1
+    memory: 2Gi
+ingress:
+  enabled: true
+  host: api.hearloveen.com
+keyvault:
+  enabled: true
+  managedIdentity: true
+  secretRotationInterval: 30d

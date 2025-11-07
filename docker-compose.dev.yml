@@ -1,0 +1,95 @@
+version: '3.9'
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri file:/mlruns --default-artifact-root /mlruns
+    ports: ["5000:5000"]
+    volumes:
+      - mlruns:/mlruns
+  telemetry-ingest:
+    build: ./workers/telemetry_ingest
+    command: ["python","worker.py"]
+    environment:
+      - RABBIT_HOST=rabbitmq
+      - PG_CONN=host=postgres user=hlv password=hlvpass dbname=hearloveen
+    depends_on: ["postgres","rabbitmq"]
+  privacy-api:
+    build: ./services/Privacy.API
+    environment:
+      - PG_CONN=Host=postgres;Username=hlv;Password=hlvpass;Database=hearloveen
+    ports: ["8082:8082"]
+    depends_on: ["postgres"]
+  analysis-proxy:
+    build: ./services/AnalysisProxy
+    environment:
+      - XAI_BASE_URL=http://xai-backend:8000
+    ports: ["8081:8080"]
+    depends_on: ["xai-backend"]
+
+postgres:
+  image: postgres:16-alpine
+  environment:
+    POSTGRES_USER: hlv
+    POSTGRES_PASSWORD: hlvpass
+    POSTGRES_DB: hearloveen
+  ports: ["5432:5432"]
+  volumes:
+    - pgdata:/var/lib/postgresql/data
+
+redis:
+  image: redis:7-alpine
+  ports: ["6379:6379"]
+  command: ["redis-server","--appendonly","yes"]
+
+minio:
+  image: quay.io/minio/minio
+  environment:
+    MINIO_ROOT_USER: hlvminio
+    MINIO_ROOT_PASSWORD: hlvminiopass
+  command: server /data --console-address ":9001"
+  ports: ["9000:9000","9001:9001"]
+  volumes:
+    - minio:/data
+
+rabbitmq:
+  image: rabbitmq:3.13-management
+  ports: ["5672:5672","15672:15672"]
+
+xai-backend:
+  build: ./docs/research/xai/backend
+  env_file:
+    - .env.example
+  environment:
+    - HL_CONFIG=config.yaml
+    - HL_MODELS=/app/models
+  volumes:
+    - ./models:/app/models
+    - ./data:/app/data
+  ports: ["8000:8000"]
+  depends_on: ["postgres","redis"]
+
+api:
+  build: ./src/ApiGateway
+  environment:
+    - ASPNETCORE_ENVIRONMENT=Development
+    - ConnectionStrings__Default=Host=postgres;Username=hlv;Password=hlvpass;Database=hearloveen
+    - Cache__Redis=redis:6379
+    - Storage__S3__Endpoint=http://minio:9000
+    - Storage__S3__AccessKey=hlvminio
+    - Storage__S3__SecretKey=hlvminiopass
+    - Storage__S3__Bucket=hearloveen
+    - Messaging__Broker=RabbitMQ
+    - Rabbit__Host=rabbitmq
+    - Rabbit__User=guest
+    - Rabbit__Pass=guest
+  ports: ["8080:8080"]
+  depends_on: ["postgres","redis","minio","rabbitmq"]
+
+volumes:
+  pgdata:
+  minio:
+
+volumes:
+  pgdata:
+  minio:
+  mlruns:

@@ -1,0 +1,6 @@
+auth:
+  jwt_secret: PLEASE_CHANGE_ME
+pricing:
+  price_per_patient_year: 149
+retention:
+  audio_days: 60
