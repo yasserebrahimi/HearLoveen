@@ -1,0 +1,52 @@
+{
+  "appTitle": "Tableau de bord du thérapeute HearLoveen",
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "patients": "Patients",
+    "sessions": "Sessions",
+    "analytics": "Analyses",
+    "settings": "Paramètres"
+  },
+  "dashboard": {
+    "welcome": "Bienvenu",
+    "overview": "Aperçu",
+    "totalPatients": "Nombre total de patients",
+    "activeSessions": "Sessions actives",
+    "averageProgress": "Progrès moyen",
+    "recentSessions": "Sessions récentes"
+  },
+  "patient": {
+    "patients": "Patients",
+    "details": "Détails du patient",
+    "progress": "Progrès",
+    "sessions": "Sessions",
+    "pronunciation": "Score de prononciation",
+    "emotion": "État émotionnel",
+    "viewDetails": "Voir les détails",
+    "yearsOld": "ans",
+    "lastSession": "Dernière session"
+  },
+  "session": {
+    "title": "Analyse de session",
+    "overview": "Aperçu de la session",
+    "date": "Date",
+    "duration": "Durée",
+    "score": "Score",
+    "overallScore": "Score global",
+    "transcription": "Transcription",
+    "emotionAnalysis": "Analyse émotionnelle",
+    "pronunciationFeedback": "Retour sur la prononciation",
+    "xaiExplanation": "Explication IA"
+  },
+  "xai": {
+    "title": "Insights d'IA explicable",
+    "confidence": "Confiance",
+    "factors": "Facteurs contributifs",
+    "recommendations": "Recommandations"
+  },
+  "settings": {
+    "language": "Langue",
+    "theme": "Thème",
+    "notifications": "Notifications"
+  }
+}

@@ -199,6 +199,7 @@
 - [x] English (EN)
 - [x] German (DE)
 - [x] Dutch (NL)
+- [x] French (FR)
 - [x] Language switcher in UI
 
 ### Accessibility
@@ -385,7 +386,7 @@
 - Comprehensive database schema with migrations
 - Mobile app with BLE/ASHA/MFi support
 - Therapist dashboard with XAI visualization
-- Multi-language support (EN/DE/NL)
+- Multi-language support (EN/DE/NL/FR)
 
 ### Remaining Items (4/51)
 1. **Load testing** - Verify 500+ concurrent users

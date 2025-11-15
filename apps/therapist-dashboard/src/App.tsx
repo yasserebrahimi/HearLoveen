@@ -69,6 +69,7 @@ export default function App() {
             <MenuItem onClick={() => changeLanguage('en')}>English</MenuItem>
             <MenuItem onClick={() => changeLanguage('de')}>Deutsch</MenuItem>
             <MenuItem onClick={() => changeLanguage('nl')}>Nederlands</MenuItem>
+            <MenuItem onClick={() => changeLanguage('fr')}>Nederlands</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>

@@ -245,7 +245,7 @@ User Request → Privacy.API → RabbitMQ Queue → DSR Worker → Database
 
 ---
 
-## 7. i18n Support (EN/DE/NL) ✅
+## 7. i18n Support (EN/DE/NL/FR) ✅
 
 ### Implementation
 
@@ -253,6 +253,7 @@ User Request → Privacy.API → RabbitMQ Queue → DSR Worker → Database
 - `apps/therapist-dashboard/src/locales/en.json` - English translations
 - `apps/therapist-dashboard/src/locales/de.json` - German translations
 - `apps/therapist-dashboard/src/locales/nl.json` - Dutch translations
+- `apps/therapist-dashboard/src/locales/fr.json` - French translations
 
 **Features:**
 - ✅ **Complete translation coverage:**
@@ -269,6 +270,7 @@ User Request → Privacy.API → RabbitMQ Queue → DSR Worker → Database
   - 🇬🇧 English (EN)
   - 🇩🇪 German (DE)
   - 🇳🇱 Dutch (NL)
+  - 🇫🇷 French (FR)
 
 **Usage:**
 ```typescript
@@ -477,7 +479,7 @@ i18n.changeLanguage('de')
 | **Frontend** |
 | Web Dashboard | ✅ | React + TypeScript + Vite |
 | Mobile App | ✅ | React Native + BLE |
-| i18n | ✅ | EN/DE/NL |
+| i18n | ✅ | EN/DE/NL/FR |
 | **ML/AI** |
 | Speech-to-Text | ✅ | ONNX Whisper |
 | Emotion Analysis | ✅ | ONNX CNN |
@@ -523,6 +525,7 @@ i18n.changeLanguage('de')
 8. `apps/therapist-dashboard/src/locales/en.json` - English
 9. `apps/therapist-dashboard/src/locales/de.json` - German
 10. `apps/therapist-dashboard/src/locales/nl.json` - Dutch
+11. `apps/therapist-dashboard/src/locales/fr.json` - French
 
 ### Documentation
 1. `docs/compliance/MDR_COMPLIANCE.md` - MDR documentation (17 sections)
