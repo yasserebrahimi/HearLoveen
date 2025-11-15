@@ -175,7 +175,7 @@
 
 1. **Specialized Focus:** Only platform built specifically for hearing-impaired children
 2. **Advanced AI:** State-of-the-art Whisper model, fine-tuned on child speech (WER <20%)
-3. **Europe-First:** GDPR by design, EU data centers, multi-language (EN, DE, NL, FI, SV, DA)
+3. **Europe-First:** GDPR by design, EU data centers, multi-language (EN, DE, NL, FR, FI, SV, DA)
 4. **Open Source:** Transparent, community-driven, academically validated
 5. **IoT Integration:** Seamless hearing aid connectivity (unique differentiator)
 6. **Real-time Collaboration:** SignalR enables live therapy sessions
